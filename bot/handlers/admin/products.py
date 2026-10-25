@@ -165,20 +165,34 @@ async def admin_product_detail(callback: CallbackQuery, session: AsyncSession):
     if not p:
         await callback.answer("Topilmadi", show_alert=True)
         return
+
+    # Ombordagi haqiqiy mavjud va sotilgan tovarlarni hisoblash
+    res_stock = await session.execute(
+        text("SELECT status, count(*) FROM stock_items WHERE product_id = :pid GROUP BY status"),
+        {"pid": pid}
+    )
+    stock_counts = dict(res_stock.fetchall())
+    avail_count = stock_counts.get("AVAILABLE", 0)
+    sold_count = stock_counts.get("SOLD", 0)
     
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Ombor qo'shish", callback_data=f"adm_addstock_{pid}")
-    builder.button(text="🗑 O'chirish", callback_data=f"adm_prod_del_{pid}")
+    builder.button(text="➕ Omborga tovar qo'shish", callback_data=f"adm_addstock_{pid}")
+    builder.button(text="📋 Mavjud tovarlarni ko'rish", callback_data=f"adm_viewstock_{pid}")
+    builder.button(text="🗑 Omborni tozalash", callback_data=f"adm_clearstock_{pid}")
+    builder.button(text="❌ Mahsulotni o'chirish", callback_data=f"adm_prod_del_{pid}")
     builder.button(text="↩️ Orqaga", callback_data="adm_prod_back")
     builder.adjust(1)
     
     price_str = f"{float(p.price_uzs):,.0f} so'm"
     txt = (
-        f"🎮 <b>{p.name}</b>\n"
-        f"💰 Narxi: <b>{price_str}</b>\n"
-        f"📦 Qoldiq: <b>{p.quantity} ta</b>\n"
-        f"📄 Tavsif: {p.description or 'Yo\'q'}\n\n"
-        f"Omborga yangi ma'lumot (login:parol) qo'shishingiz yoki mahsulotni o'chirishingiz mumkin."
+        f"🎮 <b>{p.name}</b>\n\n"
+        f"<blockquote>"
+        f"💰 <b>Narxi:</b> {price_str}\n"
+        f"🟢 <b>Sotuvdagi ombor:</b> {avail_count} ta\n"
+        f"🔴 <b>Sotilgan tovarlar:</b> {sold_count} ta\n"
+        f"📄 <b>Tavsif:</b> {p.description or 'Mavjud emas'}"
+        f"</blockquote>\n\n"
+        f"<i>Ombor boshqaruvi uchun kerakli amalni tanlang:</i>"
     )
     try:
         await callback.message.edit_text(txt, reply_markup=builder.as_markup(), parse_mode="HTML")
@@ -187,16 +201,76 @@ async def admin_product_detail(callback: CallbackQuery, session: AsyncSession):
     await callback.answer()
 
 
+@router.callback_query(F.data.startswith("adm_viewstock_"))
+async def view_available_stock(callback: CallbackQuery, session: AsyncSession):
+    pid = int(callback.data.split("_")[2])
+    res = await session.execute(
+        text("SELECT id, data_encrypted, created_at FROM stock_items WHERE product_id = :pid AND status = 'AVAILABLE' ORDER BY id ASC LIMIT 20"),
+        {"pid": pid}
+    )
+    rows = res.fetchall()
+    
+    if not rows:
+        await callback.answer("Hozircha mavjud tovarlar yo'q!", show_alert=True)
+        return
+        
+    lines = [f"📋 <b>Mavjud tovarlar ro'yxati (oxirgi {len(rows)} ta):</b>\n"]
+    for idx, (sid, data_enc, cat_time) in enumerate(rows, 1):
+        try:
+            val = decrypt_text(data_enc)
+        except Exception:
+            val = "[Shifrlangan ma'lumot]"
+        lines.append(f"{idx}. <code>{val}</code>")
+        
+    builder = InlineKeyboardBuilder()
+    builder.button(text="↩️ Mahsulotga qaytish", callback_data=f"adm_prod_view_{pid}")
+    
+    await callback.message.answer("\n".join(lines), reply_markup=builder.as_markup(), parse_mode="HTML")
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("adm_clearstock_"))
+async def clear_stock_confirm(callback: CallbackQuery, session: AsyncSession):
+    pid = int(callback.data.split("_")[2])
+    
+    await session.execute(
+        text("DELETE FROM stock_items WHERE product_id = :pid AND status = 'AVAILABLE'"),
+        {"pid": pid}
+    )
+    await session.execute(
+        text("UPDATE products SET quantity = 0 WHERE id = :pid"),
+        {"pid": pid}
+    )
+    await session.commit()
+    await callback.answer("Ombordagi sotilmagan barcha tovarlar tozalandi!", show_alert=True)
+    
+    # Qayta ko'rsatish
+    p = await session.get(Product, pid)
+    builder = InlineKeyboardBuilder()
+    builder.button(text="➕ Omborga tovar qo'shish", callback_data=f"adm_addstock_{pid}")
+    builder.button(text="↩️ Mahsulotga qaytish", callback_data=f"adm_prod_view_{pid}")
+    builder.adjust(1)
+    await callback.message.edit_text(f"✅ <b>{p.name}</b> ombori muvaffaqiyatli tozalandi (0 ta).", reply_markup=builder.as_markup(), parse_mode="HTML")
+
+
 @router.callback_query(F.data.startswith("adm_addstock_"))
 async def add_stock_start(callback: CallbackQuery, state: FSMContext):
     pid = int(callback.data.split("_")[2])
     await state.update_data(product_id=pid)
     await state.set_state(ManageStock.waiting_for_data)
     
+    builder = InlineKeyboardBuilder()
+    builder.button(text="↩️ Bekor qilish", callback_data=f"adm_prod_view_{pid}")
+    
     await callback.message.answer(
-        "📝 Yuboriladigan ma'lumotlarni matn ko'rinishida yuboring (har qatorda bittadan).\n"
-        "Yoki <code>.txt</code> formatidagi fayl yuklang.\n\n"
-        "Bekor qilish uchun /cancel bosing.",
+        "📦 <b>Omborga tovar qo'shish bo'limi</b>\n\n"
+        "Format namunalari:\n"
+        "• Har bir qatorda bitta login/parol yoki promo/kod:\n"
+        "<code>login1:parol1</code>\n"
+        "<code>login2:parol2</code>\n\n"
+        "📁 Yoki ichida qatorlab yozilgan <b>.txt fayl</b> yuklang.\n\n"
+        "<i>Tizim avtomatik ravishda dublikatlarni tekshiradi va tozalaydi.</i>",
+        reply_markup=builder.as_markup(),
         parse_mode="HTML"
     )
     await callback.answer()
