@@ -1,6 +1,8 @@
 import logging
+import os
 import sys
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 
 def setup_logger(name: str = "entellibot", level: int = logging.INFO) -> logging.Logger:
@@ -24,16 +26,22 @@ def setup_logger(name: str = "entellibot", level: int = logging.INFO) -> logging
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # File handler (rotating)
-    file_handler = RotatingFileHandler(
-        'logs/bot.log',
-        maxBytes=10 * 1024 * 1024,  # 10 MB
-        backupCount=5,
-        encoding='utf-8'
-    )
-    file_handler.setLevel(level)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    # File handler (rotating) — logs papkasi yo'q bo'lsa avtomatik yaratamiz
+    try:
+        log_dir = Path("logs")
+        log_dir.mkdir(parents=True, exist_ok=True)
+        file_handler = RotatingFileHandler(
+            log_dir / "bot.log",
+            maxBytes=10 * 1024 * 1024,  # 10 MB
+            backupCount=5,
+            encoding='utf-8'
+        )
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except Exception as e:
+        # Docker/Containerda faqat konsolga chiqarish kifoya
+        print(f"File logger initialization skipped: {e}", file=sys.stderr)
 
     return logger
 
