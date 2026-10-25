@@ -4,7 +4,16 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
     BOT_TOKEN: SecretStr
-    ADMIN_ID: int
+    ADMIN_ID: int                                    # Bosh admin (Super Admin)
+    MODERATOR_ADMIN_ID: int = 7927777183             # Yordamchi admin (Oddiy Admin)
+
+    @property
+    def all_admin_ids(self) -> list[int]:
+        """Barcha adminlar ro'yxati"""
+        admins = [self.ADMIN_ID]
+        if self.MODERATOR_ADMIN_ID:
+            admins.append(self.MODERATOR_ADMIN_ID)
+        return admins
 
     DB_URL: str
 

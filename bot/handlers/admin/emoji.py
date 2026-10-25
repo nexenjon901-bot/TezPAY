@@ -10,13 +10,13 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from bot.filters.admin import IsAdmin
+from bot.filters.admin import IsSuperAdmin
 from db.models.setting import Setting, SettingKeys
 from core.emoji import pe, set_emoji, remove_emoji, get_all_emojis, _FALLBACK
 
 router = Router()
-router.message.filter(IsAdmin())
-router.callback_query.filter(IsAdmin())
+router.message.filter(IsSuperAdmin())
+router.callback_query.filter(IsSuperAdmin())
 
 
 # ─────────────────────────────────────────────

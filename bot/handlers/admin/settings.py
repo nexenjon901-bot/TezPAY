@@ -6,12 +6,12 @@ from sqlalchemy import select
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.state import State, StatesGroup
 
-from bot.filters.admin import IsAdmin
+from bot.filters.admin import IsSuperAdmin
 from db.models.setting import Setting, SettingKeys
 
 router = Router()
-router.message.filter(IsAdmin())
-router.callback_query.filter(IsAdmin())
+router.message.filter(IsSuperAdmin())
+router.callback_query.filter(IsSuperAdmin())
 
 
 class AdminSettings(StatesGroup):

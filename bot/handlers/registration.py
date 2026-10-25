@@ -40,7 +40,7 @@ def _generate_referral_code(telegram_id: int) -> str:
 
 @router.message(CommandStart())
 async def start_handler(message: Message, state: FSMContext, session: AsyncSession, db_user: User, _: Callable[[str], str]):
-    is_admin = message.from_user.id == config.ADMIN_ID
+    is_admin = message.from_user.id in config.all_admin_ids
 
     if db_user:
         # Referal kodi yo'q bo'lsa — yaratib qo'yamiz

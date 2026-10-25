@@ -5,7 +5,12 @@ from core.config import config
 
 
 class IsAdmin(BaseFilter):
+    """Bosh admin yoki ikkinchi admin ekanligini tekshirish"""
     async def __call__(self, event: Union[Message, CallbackQuery]) -> bool:
-        # Check against the master admin ID configured in .env
-        # Later this can be expanded to check against the DB `admins` table
+        return event.from_user.id in config.all_admin_ids
+
+
+class IsSuperAdmin(BaseFilter):
+    """Faqat Bosh admin (Super Admin) uchun filtr"""
+    async def __call__(self, event: Union[Message, CallbackQuery]) -> bool:
         return event.from_user.id == config.ADMIN_ID

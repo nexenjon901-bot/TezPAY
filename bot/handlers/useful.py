@@ -59,7 +59,7 @@ async def show_useful(target):
 async def menu_back(callback: CallbackQuery):
     from bot.handlers.registration import get_main_menu_keyboard
     from core.config import config
-    is_admin = callback.from_user.id == config.ADMIN_ID
+    is_admin = callback.from_user.id in config.all_admin_ids
     first_name = callback.from_user.first_name or "Do'st"
 
     text = (

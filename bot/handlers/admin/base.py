@@ -17,8 +17,8 @@ router.message.filter(IsAdmin())
 router.callback_query.filter(IsAdmin())
 
 
-def get_admin_keyboard() -> ReplyKeyboardMarkup:
-    """Admin panel asosiy klaviaturasi — storechookie_bot uslubi"""
+def get_admin_keyboard(is_super: bool = True) -> ReplyKeyboardMarkup:
+    """Admin panel asosiy klaviaturasi (Bosh admin va oddiy admin uchun)"""
     rows = [
         [reply_btn("stats", "Statistika"),
          reply_btn("users", "Foydalanuvchilar")],
@@ -26,21 +26,28 @@ def get_admin_keyboard() -> ReplyKeyboardMarkup:
          reply_btn("categories", "Kategoriyalar")],
         [reply_btn("balance_requests", "Balans so'rovlari"),
          reply_btn("orders", "Buyurtmalar")],
-        [reply_btn("broadcast", "Xabar yuborish"),
-         reply_btn("settings", "Sozlamalar")],
-        [reply_btn("promo_admin", "Promo-kodlar"),
-         reply_btn("premium", "Premium Emoji")],
-        [reply_btn("back_home", "Bosh menyuga")],
+        [reply_btn("broadcast", "Xabar yuborish")],
     ]
+    
+    # Faqat Bosh admin uchun ko'rinadigan muhim bo'limlar
+    if is_super:
+        rows.append([reply_btn("settings", "Sozlamalar"), reply_btn("promo_admin", "Promo-kodlar")])
+        rows.append([reply_btn("premium", "Premium Emoji"), reply_btn("back_home", "Bosh menyuga")])
+    else:
+        rows.append([reply_btn("promo_admin", "Promo-kodlar"), reply_btn("back_home", "Bosh menyuga")])
+
     return ReplyKeyboardMarkup(keyboard=rows, resize_keyboard=True)
 
 
 @router.message(Command("admin"))
 @router.message(F.text.endswith("Admin panel"))
 async def admin_menu(message: Message):
+    from core.config import config
+    is_super = message.from_user.id == config.ADMIN_ID
+    role_text = "👑 Bosh Admin" if is_super else "🛡 Admin"
     await message.answer(
-        "⚙ <b>Boshqaruv</b>\n\nKerakli bo'limni tanlang:",
-        reply_markup=get_admin_keyboard()
+        f"⚙ <b>Boshqaruv paneli ({role_text})</b>\n\nKerakli bo'limni tanlang:",
+        reply_markup=get_admin_keyboard(is_super=is_super)
     )
 
 
