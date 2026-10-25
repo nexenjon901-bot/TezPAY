@@ -2,6 +2,7 @@ FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONPATH=/app
 
 WORKDIR /app
 
@@ -17,4 +18,4 @@ COPY . .
 
 # Run database migrations first if necessary (optional) or just run the bot
 # CMD ["sh", "-c", "python init_db.py && python -m bot.main"]
-CMD ["python", "-m", "bot.main"]
+CMD ["python", "bot/main.py"]
