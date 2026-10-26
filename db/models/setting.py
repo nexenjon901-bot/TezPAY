@@ -67,3 +67,6 @@ class SettingKeys:
     EMOJI_CROWN    = "emoji_crown"
     EMOJI_MONEY    = "emoji_money"
     EMOJI_LOCK     = "emoji_lock"
+    EMOJI_WELCOME  = "emoji_welcome"
+    EMOJI_CARD_POST= "emoji_card_post"
+    EMOJI_WARNING  = "emoji_warning"

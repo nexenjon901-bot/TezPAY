@@ -71,13 +71,16 @@ EMOJI_CATEGORIES = {
     "posts": {
         "title": "📝 Matn & Post emojilari",
         "slots": [
-            (SettingKeys.EMOJI_SUCCESS,  "Muvaffaqiyat (✅)",    "✅"),
-            (SettingKeys.EMOJI_ERROR,    "Xato (❌)",            "❌"),
-            (SettingKeys.EMOJI_STAR,     "Yulduz (⭐)",          "⭐"),
-            (SettingKeys.EMOJI_FIRE,     "Olov (🔥)",            "🔥"),
-            (SettingKeys.EMOJI_CROWN,    "Toj (👑)",             "👑"),
-            (SettingKeys.EMOJI_MONEY,    "Pul (💸)",             "💸"),
-            (SettingKeys.EMOJI_LOCK,     "Qulf (🔒)",            "🔒"),
+            (SettingKeys.EMOJI_WELCOME,  "Salom / Xush kelibsiz (👋)", "👋"),
+            (SettingKeys.EMOJI_SUCCESS,  "Muvaffaqiyat (✅)",           "✅"),
+            (SettingKeys.EMOJI_ERROR,    "Xato (❌)",                   "❌"),
+            (SettingKeys.EMOJI_WARNING,  "Ogohlantirish (⚠️)",          "⚠️"),
+            (SettingKeys.EMOJI_STAR,     "Yulduz (⭐)",                 "⭐"),
+            (SettingKeys.EMOJI_FIRE,     "Olov (🔥)",                   "🔥"),
+            (SettingKeys.EMOJI_CROWN,    "Toj (👑)",                    "👑"),
+            (SettingKeys.EMOJI_MONEY,    "Pul (💸)",                    "💸"),
+            (SettingKeys.EMOJI_LOCK,     "Qulf (🔒)",                   "🔒"),
+            (SettingKeys.EMOJI_CARD_POST,"Karta to'lov posti (💳)",     "💳"),
         ]
     }
 }

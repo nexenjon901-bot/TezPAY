@@ -129,14 +129,14 @@ async def process_balance_amount(message: Message, state: FSMContext, session: A
     builder.adjust(1)
 
     text = (
-        f"💰 <b>Balansni to'ldirish</b>\n\n"
+        f"{pe('money')} <b>Balansni to'ldirish</b>\n\n"
         f"<blockquote>"
-        f"💳 <b>Karta raqami:</b>\n"
+        f"{pe('card_post')} <b>Karta raqami:</b>\n"
         f"<code>{card_number}</code>\n"
-        f"👤 <b>Karta egasi:</b> {card_owner}\n\n"
-        f"💵 <b>To'lanadigan summa:</b> {amount:,} so'm\n"
+        f"{pe('profile')} <b>Karta egasi:</b> {card_owner}\n\n"
+        f"{pe('balance')} <b>To'lanadigan summa:</b> {amount:,} so'm\n"
         f"</blockquote>\n\n"
-        f"📌 <b>To'lov tartibi:</b>\n"
+        f"{pe('star')} <b>To'lov tartibi:</b>\n"
         f"1. Yuqoridagi karta raqamini nusxalab oling.\n"
         f"2. Payme, Click yoki bank ilovangiz orqali <b>{amount:,} so'm</b> o'tkazing.\n"
         f"3. To'lov amalga oshirilgach, <b>to'lov chekini (screenshot yoki PDF)</b> shu yerga yuboring."
@@ -224,7 +224,7 @@ async def balance_back(callback: CallbackQuery, state: FSMContext):
     first_name = callback.from_user.first_name or "Foydalanuvchi"
 
     text = (
-        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
+        f"{pe('welcome')} <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
         f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"

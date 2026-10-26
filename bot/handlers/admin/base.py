@@ -41,14 +41,18 @@ def get_admin_keyboard(is_super: bool = True) -> ReplyKeyboardMarkup:
 
 @router.message(Command("admin"))
 @router.message(F.text.endswith("Admin panel"))
-async def admin_menu(message: Message):
+async def admin_menu(event: Message | CallbackQuery):
     from core.config import config
-    is_super = message.from_user.id == config.ADMIN_ID
+    user_id = event.from_user.id
+    is_super = int(user_id) == int(config.ADMIN_ID)
     role_text = "👑 Bosh Admin" if is_super else "🛡 Admin"
-    await message.answer(
-        f"⚙ <b>Boshqaruv paneli ({role_text})</b>\n\nKerakli bo'limni tanlang:",
-        reply_markup=get_admin_keyboard(is_super=is_super)
-    )
+    txt = f"⚙ <b>Boshqaruv paneli ({role_text})</b>\n\nKerakli bo'limni tanlang:"
+    kb = get_admin_keyboard(is_super=is_super)
+    
+    if isinstance(event, CallbackQuery):
+        await event.message.answer(txt, reply_markup=kb)
+    else:
+        await event.answer(txt, reply_markup=kb)
 
 
 @router.message(F.text.endswith("Bosh menyuga"))

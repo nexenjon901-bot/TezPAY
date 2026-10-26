@@ -147,7 +147,7 @@ async def ref_back_main(callback: CallbackQuery):
     is_admin = callback.from_user.id in config.all_admin_ids
     first_name = callback.from_user.first_name or "Foydalanuvchi"
     text = (
-        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
+        f"{pe('welcome')} <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
         f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"

@@ -52,7 +52,7 @@ async def start_handler(message: Message, state: FSMContext, session: AsyncSessi
 
         first_name = db_user.first_name or "Foydalanuvchi"
         text = (
-            f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
+            f"{pe('welcome')} <b>Assalomu alaykum, {first_name}!</b>\n\n"
             f"<blockquote>"
             f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
             f"</blockquote>"
@@ -200,5 +200,5 @@ async def menu_support(callback: CallbackQuery):
 @router.callback_query(F.data == "menu_admin")
 async def menu_admin(callback: CallbackQuery):
     from bot.handlers.admin.base import admin_menu
-    await admin_menu(callback.message)
+    await admin_menu(callback)
     await callback.answer()

@@ -63,7 +63,7 @@ async def menu_back(callback: CallbackQuery):
     first_name = callback.from_user.first_name or "Foydalanuvchi"
 
     text = (
-        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
+        f"{pe('welcome')} <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
         f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"

@@ -65,6 +65,9 @@ _FALLBACK: dict[str, str] = {
     "emoji_crown":            "👑",
     "emoji_money":            "💸",
     "emoji_lock":             "🔒",
+    "emoji_welcome":          "👋",
+    "emoji_card_post":        "💳",
+    "emoji_warning":          "⚠️",
 }
 
 # Xotiradagi kesh: { slug: emoji_id }
