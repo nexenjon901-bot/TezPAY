@@ -62,10 +62,12 @@ async def show_balance_menu(message: Message, db_user: User):
 
     text = (
         f"{pe('balance')} <b>Balansni to'ldirish</b>\n\n"
-        f"Hisobingizni to'ldirish uchun qulay to'lov usulini tanlang.\n"
-        f"Minimal to'lov: <b>{MIN_AMOUNT:,} so'm</b>\n\n"
-        f"{pe('money')} Joriy balans: <b>{float(db_user.balance or 0):,.0f} so'm</b>\n\n"
-        f"<i>To'lov turini tanlang:</i>"
+        f"<blockquote>"
+        f"💳 Joriy balansingiz: <b>{float(db_user.balance or 0):,.0f} so'm</b>\n"
+        f"⚠️ Minimal to'lov: <b>{MIN_AMOUNT:,} so'm</b>\n\n"
+        f"Hisobingizni karta orqali yoki promo-kod faollashtirib to'ldirishingiz mumkin."
+        f"</blockquote>\n\n"
+        f"<i>To'lov usulini tanlang:</i>"
     )
 
     await _send_balance_menu(message, text, builder.as_markup())
@@ -128,11 +130,16 @@ async def process_balance_amount(message: Message, state: FSMContext, session: A
 
     text = (
         f"💰 <b>Balansni to'ldirish</b>\n\n"
+        f"<blockquote>"
         f"💳 <b>Karta raqami:</b>\n"
         f"<code>{card_number}</code>\n"
-        f"<b>Karta egasi:</b> {card_owner}\n\n"
-        f"💵 <b>To'lanadigan summa: {amount:,} so'm</b>\n\n"
-        f"✅ To'lovni amalga oshiring va <b>to'lov chekini (screenshot)</b> shu yerga yuboring:"
+        f"👤 <b>Karta egasi:</b> {card_owner}\n\n"
+        f"💵 <b>To'lanadigan summa:</b> {amount:,} so'm\n"
+        f"</blockquote>\n\n"
+        f"📌 <b>To'lov tartibi:</b>\n"
+        f"1. Yuqoridagi karta raqamini nusxalab oling.\n"
+        f"2. Payme, Click yoki bank ilovangiz orqali <b>{amount:,} so'm</b> o'tkazing.\n"
+        f"3. To'lov amalga oshirilgach, <b>to'lov chekini (screenshot yoki PDF)</b> shu yerga yuboring."
     )
 
     if os.path.exists(BALANCE_BANNER):
@@ -166,10 +173,13 @@ async def process_balance_receipt(message: Message, state: FSMContext, session: 
     await state.clear()
 
     text = (
-        f"✅ <b>Chekingiz qabul qilindi!</b>\n\n"
-        f"💰 So'ralgan miqdor: <b>{amount:,} so'm</b>\n"
-        f"⏳ Admin tekshirib, tez orada balansingizni to'ldiradi.\n\n"
-        f"📦 Balans holati haqida xabar olasiz."
+        f"✅ <b>To'lov cheki qabul qilindi!</b>\n\n"
+        f"<blockquote>"
+        f"💰 Kiritilgan summa: <b>{amount:,} so'm</b>\n"
+        f"⏳ Holat: Tekshirilmoqda\n\n"
+        f"Administrator to'lovni tekshirib, tez orada balansingizni to'ldiradi. "
+        f"Hisobingiz to'ldirilganda sizga avtomatik xabar keladi."
+        f"</blockquote>"
     )
     await message.answer(text)
 
@@ -211,13 +221,12 @@ async def balance_back(callback: CallbackQuery, state: FSMContext):
     from bot.handlers.registration import get_main_menu_keyboard
     from core.config import config
     is_admin = callback.from_user.id in config.all_admin_ids
-    first_name = callback.from_user.first_name or "Do'st"
+    first_name = callback.from_user.first_name or "Foydalanuvchi"
 
     text = (
-        f"👋 <b>Salom, {first_name}!</b>\n\n"
+        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
-        f"Bu PUBG Mobile va o'yin akkauntlari do'koni boti! "
-        f"Kerakli bo'limni tanlang va qulay xarid qiling."
+        f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"
     )
     try:

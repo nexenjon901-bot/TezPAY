@@ -97,11 +97,12 @@ async def _process_code_string(message: Message, code: str, session: AsyncSessio
         builder.adjust(1)
 
         text = (
-            f"🎉 <b>TABRIKLAYMIZ!</b>\n\n"
-            f"Promo-kod muvaffaqiyatli faollashtirildi!\n\n"
-            f"{pe('money')} Qo'shilgan summa: <b>+{format_money(reward)}</b>\n"
-            f"{pe('balance')} Yangi balansingiz: <b>{format_money(new_balance)}</b>\n\n"
-            f"<i>Mablag' balansingizga o'tkazildi, do'kondan istalgan akkauntni xarid qilishingiz mumkin!</i>"
+            f"🎉 <b>Promo-kod faollashtirildi!</b>\n\n"
+            f"<blockquote>"
+            f"🎁 Mukofot: <b>+{format_money(reward)}</b>\n"
+            f"💰 Yangi balans: <b>{format_money(new_balance)}</b>\n\n"
+            f"Mablag' balansingizga qo'shildi. Do'kondan xarid qilishingiz mumkin."
+            f"</blockquote>"
         )
         await message.answer(text, reply_markup=builder.as_markup())
 

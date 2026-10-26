@@ -4,7 +4,7 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
     BOT_TOKEN: SecretStr
-    ADMIN_ID: int                                    # Bosh admin (Super Admin)
+    ADMIN_ID: int = 6844763632                       # Bosh admin (Super Admin)
     MODERATOR_ADMIN_ID: int = 7927777183             # Yordamchi admin (Oddiy Admin)
 
     @property

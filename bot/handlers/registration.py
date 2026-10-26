@@ -50,12 +50,11 @@ async def start_handler(message: Message, state: FSMContext, session: AsyncSessi
             session.add(db_user)
             await session.commit()
 
-        first_name = db_user.first_name or "Do'st"
+        first_name = db_user.first_name or "Foydalanuvchi"
         text = (
-            f"👋 <b>Salom, {first_name}!</b>\n\n"
+            f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
             f"<blockquote>"
-            f"Bu PUBG Mobile va o'yin akkauntlari do'koni boti! "
-            f"Kerakli bo'limni tanlang va qulay xarid qiling."
+            f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
             f"</blockquote>"
         )
 

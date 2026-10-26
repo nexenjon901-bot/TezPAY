@@ -59,15 +59,15 @@ async def _build_profile_text(db_user: User, session: AsyncSession) -> str:
     text = (
         f"{pe('profile')} <b>Sizning profilingiz</b>\n\n"
         f"<blockquote>"
-        f"• ID: {db_user.telegram_id}\n"
-        f"• Username: {username}\n"
-        f"• Ro'yxatdan o'tgan: {joined}\n"
-        f"• Balans: ${balance_usd:.2f} ({balance:,.0f} so'm)\n"
-        f"• Jami sarflangan: ${spent_usd:.2f} ({total_spent:,.0f} so'm)\n\n"
-        f"Xaridlar:\n"
-        f"• 24 soat: {cnt24} dona / ${float(sum24)/USD_RATE:.2f}\n"
-        f"• 7 kun: {cnt7} dona / ${float(sum7)/USD_RATE:.2f}\n"
-        f"• Barcha vaqt: {cntall} dona / ${float(sumall)/USD_RATE:.2f}"
+        f"🆔 Telegram ID: <code>{db_user.telegram_id}</code>\n"
+        f"👤 Username: {username}\n"
+        f"📅 Ro'yxatdan o'tgan: {joined}\n\n"
+        f"💰 Balans: <b>{balance:,.0f} so'm</b> (${balance_usd:.2f})\n"
+        f"💸 Jami xaridlar: <b>{total_spent:,.0f} so'm</b> (${spent_usd:.2f})\n\n"
+        f"📊 Xaridlar statistikasi:\n"
+        f"• 24 soatda: {cnt24} ta (${float(sum24)/USD_RATE:.2f})\n"
+        f"• 7 kunda: {cnt7} ta (${float(sum7)/USD_RATE:.2f})\n"
+        f"• Umumiy: {cntall} ta (${float(sumall)/USD_RATE:.2f})"
         f"</blockquote>"
     )
     return text
@@ -143,9 +143,20 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
     builder = InlineKeyboardBuilder()
 
     if not orders:
-        text = "📋 <b>Buyurtmalar tarixi</b>\n\nSiz hali hech narsa sotib olmadingiz."
+        text = (
+            "📋 <b>Buyurtmalar tarixi</b>\n\n"
+            "<blockquote>"
+            "Siz hali hech narsa xarid qilmadingiz.\n"
+            "Do'kon bo'limidan kerakli mahsulotni tanlang."
+            "</blockquote>"
+        )
     else:
-        lines = ["📋 <b>Buyurtmalar tarixi</b>\n\nMa'lumotlarni ko'rish uchun quyidagi tugmalardan birini tanlang:\n"]
+        lines = [
+            "📋 <b>Buyurtmalar tarixi</b>\n\n"
+            "<blockquote>"
+            "Batafsil ma'lumotni ko'rish uchun kerakli buyurtma tugmasini bosing:"
+            "</blockquote>\n"
+        ]
         for o in orders:
             date = o.created_at.strftime("%d.%m.%Y") if o.created_at else "—"
             status_icons = {
@@ -154,15 +165,15 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
                 "DELIVERY_FAILED": "⚠️"
             }
             icon = status_icons.get(o.status.value if o.status else "", "❓")
-            lines.append(f"{icon} <code>{o.order_number}</code> — {float(o.price):,.0f} so'm — {date}")
+            lines.append(f"{icon} <code>{o.order_number}</code> | {float(o.price):,.0f} so'm | {date}")
             
             # Add button for this order
-            builder.button(text=f"{icon} {o.order_number}", callback_data=f"order_view_{o.id}")
+            builder.button(text=f"{icon} #{o.order_number}", callback_data=f"order_view_{o.id}")
             
         text = "\n".join(lines)
 
-    # Adjust buttons 2 per row
-    builder.adjust(2)
+    # Adjust order buttons 1 per row for clear mobile tapping
+    builder.adjust(1)
     # Add back button on its own row
     builder.row(InlineKeyboardBuilder().button(**btn_args("back", "Orqaga"), callback_data="profile_back_detail").as_markup().inline_keyboard[0])
 
@@ -176,7 +187,6 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
 async def view_order_details(callback: CallbackQuery, session: AsyncSession, db_user: User):
     order_id = int(callback.data.split("_")[2])
     
-    # Check order belongs to user
     order = await session.get(Order, order_id)
     if not order or order.user_id != db_user.id:
         await callback.answer("Buyurtma topilmadi!", show_alert=True)
@@ -185,31 +195,53 @@ async def view_order_details(callback: CallbackQuery, session: AsyncSession, db_
     from sqlalchemy import text
     from core.security import decrypt_text
     from core.utils import format_money
+    from db.models.product import Product
     
+    # Mahsulot nomini olish
+    prod_name = "Mahsulot"
+    if order.product_id:
+        prod = await session.get(Product, order.product_id)
+        if prod:
+            prod_name = prod.name
+            
     res = await session.execute(
         text("SELECT data_encrypted FROM stock_items WHERE order_id = :oid"),
         {"oid": order_id}
     )
     row = res.fetchone()
     
-    if not row:
-        await callback.answer("Ma'lumot topilmadi (eski tizimdagi buyurtma bo'lishi mumkin).", show_alert=True)
-        return
+    if row and row[0]:
+        try:
+            item_data = decrypt_text(row[0])
+        except Exception:
+            item_data = str(row[0])
+    else:
+        item_data = "Ma'lumot topilmadi yoki yetkazib berilgan."
         
-    try:
-        decrypted_data = decrypt_text(row[0])
-    except Exception:
-        decrypted_data = "Ma'lumotni o'qishda xatolik yuz berdi."
-        
+    order_date = order.created_at.strftime("%d.%m.%Y %H:%M") if order.created_at else "—"
+    
+    status_icons = {
+        "COMPLETED": "✅ Bajarildi", "CANCELLED": "❌ Bekor qilingan", "REJECTED": "❌ Rad etilgan",
+        "PAYMENT_REVIEW": "⏳ Tekshirilmoqda", "APPROVED": "✔️ Tasdiqlangan", "PENDING_PAYMENT": "⏳ Kutilmoqda",
+        "DELIVERY_FAILED": "⚠️ Yetkazishda xatolik"
+    }
+    st_title = status_icons.get(order.status.value if order.status else "", "Holat: " + str(order.status))
+
     text_msg = (
-        f"🧾 <b>Buyurtma:</b> <code>{order.order_number}</code>\n"
-        f"💰 <b>Narxi:</b> {format_money(order.price)}\n\n"
-        f"🔑 <b>Sizning ma'lumotlaringiz:</b>\n"
-        f"<code>{decrypted_data}</code>"
+        f"🧾 <b>Buyurtma #{order.order_number}</b>\n\n"
+        f"<blockquote>"
+        f"🎮 Mahsulot: <b>{prod_name}</b>\n"
+        f"💰 Narxi: <b>{format_money(order.price)}</b>\n"
+        f"📊 Holati: <b>{st_title}</b>\n"
+        f"📅 Sana: <b>{order_date}</b>\n\n"
+        f"🔑 <b>Hisob ma'lumotlari:</b>\n"
+        f"<code>{item_data}</code>"
+        f"</blockquote>"
     )
     
     builder = InlineKeyboardBuilder()
     builder.button(**btn_args("back", "Orqaga"), callback_data="profile_orders")
+    builder.adjust(1)
     
     try:
         await callback.message.edit_caption(caption=text_msg, reply_markup=builder.as_markup())
@@ -296,13 +328,12 @@ async def profile_back_main(callback: CallbackQuery):
     from bot.handlers.registration import get_main_menu_keyboard
     from core.config import config
     is_admin = callback.from_user.id in config.all_admin_ids
-    first_name = callback.from_user.first_name or "Do'st"
+    first_name = callback.from_user.first_name or "Foydalanuvchi"
 
     text = (
-        f"👋 <b>Salom, {first_name}!</b>\n\n"
+        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
-        f"Bu PUBG Mobile va o'yin akkauntlari do'koni boti! "
-        f"Kerakli bo'limni tanlang va qulay xarid qiling."
+        f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"
     )
     try:

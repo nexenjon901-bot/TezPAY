@@ -144,13 +144,12 @@ async def show_referral(message: Message, session: AsyncSession, db_user: User):
 async def ref_back_main(callback: CallbackQuery):
     from bot.handlers.registration import get_main_menu_keyboard
     from core.config import config
-    is_admin = callback.from_user.id == config.ADMIN_ID
-    first_name = callback.from_user.first_name or "Do'st"
+    is_admin = callback.from_user.id in config.all_admin_ids
+    first_name = callback.from_user.first_name or "Foydalanuvchi"
     text = (
-        f"👋 <b>Salom, {first_name}!</b>\n\n"
+        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
-        f"Bu PUBG Mobile va o'yin akkauntlari do'koni boti! "
-        f"Kerakli bo'limni tanlang va qulay xarid qiling."
+        f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"
     )
     try:

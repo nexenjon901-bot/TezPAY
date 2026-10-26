@@ -427,13 +427,16 @@ async def confirm_purchase(callback: CallbackQuery, session: AsyncSession, db_us
         # Optionally update order status to DELIVERY_FAILED here
         
     text_msg = (
-        f"{pe('success')} <b>Xarid muvaffaqiyatli!</b>\n\n"
-        f"🧾 Buyurtma: <code>{order_num}</code>\n"
-        f"{pe('shop')} Mahsulot: <b>{prod_name}</b>\n"
-        f"{pe('money')} To'landi: <b>{format_money(price)}</b>\n\n"
-        f"{pe('lock')} <b>Sizning ma'lumotlaringiz:</b>\n"
-        f"<code>{decrypted_data}</code>\n\n"
-        f"{pe('balance')} Qolgan balans: <b>{format_money(db_user.balance)}</b>"
+        f"{pe('success')} <b>Xarid muvaffaqiyatli amalga oshirildi!</b>\n\n"
+        f"<blockquote>"
+        f"🧾 Buyurtma: <code>#{order_num}</code>\n"
+        f"🎮 Mahsulot: <b>{prod_name}</b>\n"
+        f"💰 Narxi: <b>{format_money(price)}</b>\n"
+        f"💳 Qolgan balans: <b>{format_money(db_user.balance)}</b>\n\n"
+        f"🔑 <b>Hisob ma'lumotlari:</b>\n"
+        f"<code>{decrypted_data}</code>"
+        f"</blockquote>\n\n"
+        f"<i>Xaridingiz uchun rahmat! Barcha xaridlaringiz profil bo'limida saqlanadi.</i>"
     )
 
     from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -551,13 +554,12 @@ async def back_to_main(callback: CallbackQuery):
     from bot.handlers.registration import get_main_menu_keyboard
     from core.config import config
     is_admin = callback.from_user.id in config.all_admin_ids
-    first_name = callback.from_user.first_name or "Do'st"
+    first_name = callback.from_user.first_name or "Foydalanuvchi"
 
     text = (
-        f"👋 <b>Salom, {first_name}!</b>\n\n"
+        f"👋 <b>Assalomu alaykum, {first_name}!</b>\n\n"
         f"<blockquote>"
-        f"Bu PUBG Mobile va o'yin akkauntlari do'koni boti! "
-        f"Kerakli bo'limni tanlang va qulay xarid qiling."
+        f"Do'konimizga xush kelibsiz! O'zingizga ma'qul bo'limni tanlang va qulay xarid qiling."
         f"</blockquote>"
     )
     try:
