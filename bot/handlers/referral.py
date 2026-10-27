@@ -67,10 +67,6 @@ async def withdraw_referral_bonus(callback: CallbackQuery, session: AsyncSession
     await show_referral(callback.message, session, db_user)
 
 import urllib.parse
-import os
-from aiogram.types import FSInputFile
-
-REFERRAL_BANNER = "bot/images/referral.png"
 
 async def show_referral(message: Message, session: AsyncSession, db_user: User):
     if not db_user:
@@ -125,20 +121,11 @@ async def show_referral(message: Message, session: AsyncSession, db_user: User):
 
     if isinstance(message, CallbackQuery):
         try:
-            if banner_exists:
-                await message.message.edit_caption(caption=text, reply_markup=builder.as_markup())
-            else:
-                await message.message.edit_text(text, reply_markup=builder.as_markup())
+            await message.message.edit_text(text, reply_markup=builder.as_markup())
         except Exception:
-            try:
-                await message.message.edit_text(text, reply_markup=builder.as_markup())
-            except Exception:
-                await message.message.answer(text, reply_markup=builder.as_markup())
+            await message.message.answer(text, reply_markup=builder.as_markup())
     else:
-        if banner_exists:
-            await message.answer_photo(photo=FSInputFile(REFERRAL_BANNER), caption=text, reply_markup=builder.as_markup())
-        else:
-            await message.answer(text, reply_markup=builder.as_markup())
+        await message.answer(text, reply_markup=builder.as_markup())
 
 @router.callback_query(F.data == "menu_back_main")
 async def ref_back_main(callback: CallbackQuery):
@@ -153,7 +140,7 @@ async def ref_back_main(callback: CallbackQuery):
         f"</blockquote>"
     )
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
+    except Exception:
+        await callback.message.answer(text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
     await callback.answer()

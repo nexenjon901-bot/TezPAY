@@ -11,12 +11,6 @@ USEFUL_LINKS = [
 ]
 
 
-import os
-from aiogram.types import FSInputFile, InputMediaPhoto
-
-USEFUL_BANNER = "bot/images/useful.png"
-
-
 async def show_useful(target):
     builder = InlineKeyboardBuilder()
     for name, url in USEFUL_LINKS:
@@ -32,27 +26,13 @@ async def show_useful(target):
         "</blockquote>"
     )
 
-    banner = FSInputFile(USEFUL_BANNER) if os.path.exists(USEFUL_BANNER) else None
-
     if isinstance(target, CallbackQuery):
         try:
-            if banner:
-                await target.message.edit_media(
-                    media=InputMediaPhoto(media=banner, caption=text, parse_mode="HTML"),
-                    reply_markup=builder.as_markup()
-                )
-            else:
-                await target.message.edit_caption(caption=text, reply_markup=builder.as_markup())
+            await target.message.edit_text(text=text, reply_markup=builder.as_markup())
         except Exception:
-            try:
-                await target.message.edit_text(text=text, reply_markup=builder.as_markup())
-            except Exception:
-                pass
+            await target.message.answer(text, reply_markup=builder.as_markup())
     else:
-        if banner:
-            await target.answer_photo(photo=banner, caption=text, reply_markup=builder.as_markup())
-        else:
-            await target.answer(text, reply_markup=builder.as_markup())
+        await target.answer(text, reply_markup=builder.as_markup())
 
 
 @router.callback_query(F.data == "menu_back")
@@ -69,7 +49,7 @@ async def menu_back(callback: CallbackQuery):
         f"</blockquote>"
     )
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
+    except Exception:
+        await callback.message.answer(text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
     await callback.answer()

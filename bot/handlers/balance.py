@@ -1,11 +1,10 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from typing import Callable
-import os
 
 from bot.states.balance import BalanceFill
 from core.logger import logger
@@ -16,35 +15,21 @@ from core.emoji import pe, btn_args
 
 router = Router()
 
-BALANCE_BANNER = "bot/images/balance.png"
 MIN_AMOUNT = 10_000  # Minimal to'lov (UZS)
 
 
 async def _send_balance_menu(target, text: str, keyboard):
-    """Banner bilan yoki bansiz xabar yuborish"""
-    banner_path = BALANCE_BANNER
-    from aiogram.types import InputMediaPhoto
-    banner = FSInputFile(banner_path) if os.path.exists(banner_path) else None
-
+    """Xabar yuborish (rasmsiz, toza matn)"""
     if isinstance(target, Message):
-        if banner:
-            await target.answer_photo(photo=banner, caption=text, reply_markup=keyboard)
-        else:
-            await target.answer(text, reply_markup=keyboard)
+        await target.answer(text, reply_markup=keyboard)
     else:  # CallbackQuery
         try:
-            if banner:
-                await target.message.edit_media(
-                    media=InputMediaPhoto(media=banner, caption=text, parse_mode="HTML"),
-                    reply_markup=keyboard
-                )
-            else:
-                await target.message.edit_caption(caption=text, reply_markup=keyboard)
+            await target.message.edit_text(text=text, reply_markup=keyboard)
         except Exception:
             try:
-                await target.message.edit_text(text=text, reply_markup=keyboard)
+                await target.message.edit_caption(caption=text, reply_markup=keyboard)
             except Exception:
-                pass
+                await target.message.answer(text, reply_markup=keyboard)
 
 
 # ───────────────────────────────────────────
@@ -92,9 +77,9 @@ async def ask_balance_amount(callback: CallbackQuery, state: FSMContext):
     )
 
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=builder.as_markup())
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=builder.as_markup())
+    except Exception:
+        await callback.message.answer(text, reply_markup=builder.as_markup())
 
     await state.set_state(BalanceFill.waiting_for_amount)
     await callback.answer()
@@ -142,14 +127,7 @@ async def process_balance_amount(message: Message, state: FSMContext, session: A
         f"3. To'lov amalga oshirilgach, <b>to'lov chekini (screenshot yoki PDF)</b> shu yerga yuboring."
     )
 
-    if os.path.exists(BALANCE_BANNER):
-        await message.answer_photo(
-            photo=FSInputFile(BALANCE_BANNER),
-            caption=text,
-            reply_markup=builder.as_markup()
-        )
-    else:
-        await message.answer(text, reply_markup=builder.as_markup())
+    await message.answer(text, reply_markup=builder.as_markup())
 
     await state.set_state(BalanceFill.waiting_for_receipt)
 
@@ -230,9 +208,9 @@ async def balance_back(callback: CallbackQuery, state: FSMContext):
         f"</blockquote>"
     )
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
+    except Exception:
+        await callback.message.answer(text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
     await callback.answer()
 
 

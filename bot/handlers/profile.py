@@ -99,31 +99,16 @@ async def show_profile(target, session: AsyncSession, db_user: User):
     text = await _build_profile_text(db_user, session)
     keyboard = _get_profile_keyboard()
 
-    banner = FSInputFile(PROFILE_BANNER) if os.path.exists(PROFILE_BANNER) else None
-    from aiogram.types import InputMediaPhoto
-
     if isinstance(target, CallbackQuery):
         try:
-            if banner:
-                await target.message.edit_media(
-                    media=InputMediaPhoto(media=banner, caption=text, parse_mode="HTML"),
-                    reply_markup=keyboard
-                )
-            else:
-                await target.message.edit_caption(caption=text, reply_markup=keyboard)
+            await target.message.edit_text(text=text, reply_markup=keyboard)
         except Exception:
             try:
-                await target.message.edit_text(text=text, reply_markup=keyboard)
+                await target.message.edit_caption(caption=text, reply_markup=keyboard)
             except Exception:
-                if banner:
-                    await target.message.answer_photo(photo=banner, caption=text, reply_markup=keyboard)
-                else:
-                    await target.message.answer(text, reply_markup=keyboard)
+                await target.message.answer(text, reply_markup=keyboard)
     elif isinstance(target, Message):
-        if banner:
-            await target.answer_photo(photo=banner, caption=text, reply_markup=keyboard)
-        else:
-            await target.answer(text, reply_markup=keyboard)
+        await target.answer(text, reply_markup=keyboard)
 
 
 # ───────────────────────────────────────────
@@ -379,7 +364,7 @@ async def profile_back_main(callback: CallbackQuery):
         f"</blockquote>"
     )
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
+    except Exception:
+        await callback.message.answer(text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
     await callback.answer()

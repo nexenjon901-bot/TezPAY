@@ -1,9 +1,8 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery, FSInputFile
+from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Callable
-import os
 from decimal import Decimal
 
 from core.utils import format_money
@@ -23,16 +22,6 @@ from bot.keyboards.shop import (
 from services.orders import generate_order_number
 
 router = Router()
-
-SHOP_BANNER = "bot/images/shop.png"
-PRODUCT_BANNER = "bot/images/product_detail.png"
-
-
-async def _get_banner(path: str):
-    """Rasm fayli mavjud bo'lsa FSInputFile, aks holda None"""
-    if os.path.exists(path):
-        return FSInputFile(path)
-    return None
 
 
 # ───────────────────────────────────────────
@@ -66,31 +55,16 @@ async def show_shop(target, session: AsyncSession, db_user: User, _: Callable[[s
     )
     keyboard = get_categories_keyboard(categories, with_back=True)
 
-    banner = await _get_banner(SHOP_BANNER)
-    from aiogram.types import InputMediaPhoto
-
     if isinstance(target, CallbackQuery):
         try:
-            if banner:
-                await target.message.edit_media(
-                    media=InputMediaPhoto(media=banner, caption=text, parse_mode="HTML"),
-                    reply_markup=keyboard
-                )
-            else:
-                await target.message.edit_caption(caption=text, reply_markup=keyboard)
+            await target.message.edit_text(text=text, reply_markup=keyboard)
         except Exception:
             try:
-                await target.message.edit_text(text=text, reply_markup=keyboard)
+                await target.message.edit_caption(caption=text, reply_markup=keyboard)
             except Exception:
-                if banner:
-                    await target.message.answer_photo(photo=banner, caption=text, reply_markup=keyboard)
-                else:
-                    await target.message.answer(text, reply_markup=keyboard)
+                await target.message.answer(text, reply_markup=keyboard)
     elif isinstance(target, Message):
-        if banner:
-            await target.answer_photo(photo=banner, caption=text, reply_markup=keyboard)
-        else:
-            await target.answer(text, reply_markup=keyboard)
+        await target.answer(text, reply_markup=keyboard)
 
 
 @router.callback_query(F.data == "shop_back_cats")
@@ -111,9 +85,9 @@ async def back_to_categories(callback: CallbackQuery, session: AsyncSession):
     )
 
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=keyboard)
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=keyboard)
+    except Exception:
+        await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 
@@ -146,22 +120,13 @@ async def show_category_products(callback: CallbackQuery, session: AsyncSession)
         f"</blockquote>"
     )
 
-    from aiogram.types import InputMediaPhoto
-    media_file = cat.image_file_id if cat.image_file_id else FSInputFile(SHOP_BANNER)
-
     try:
-        if media_file:
-            await callback.message.edit_media(
-                media=InputMediaPhoto(media=media_file, caption=text, parse_mode="HTML"),
-                reply_markup=keyboard
-            )
-        else:
-            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
+        await callback.message.edit_text(text=text, reply_markup=keyboard)
     except Exception:
         try:
-            await callback.message.edit_text(text=text, reply_markup=keyboard)
+            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
         except Exception:
-            pass
+            await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 
@@ -196,29 +161,13 @@ async def show_product_detail(callback: CallbackQuery, session: AsyncSession):
 
     keyboard = get_product_detail_keyboard(prod)
 
-    from aiogram.types import InputMediaPhoto
-    
-    # Try product image, fallback to category image, fallback to PRODUCT_BANNER
-    cat = await session.get(Category, prod.category_id)
-    media_file = prod.image_file_id
-    if not media_file and cat:
-        media_file = cat.image_file_id
-    if not media_file:
-        media_file = FSInputFile(PRODUCT_BANNER)
-
     try:
-        if media_file:
-            await callback.message.edit_media(
-                media=InputMediaPhoto(media=media_file, caption=text, parse_mode="HTML"),
-                reply_markup=keyboard
-            )
-        else:
-            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
+        await callback.message.edit_text(text=text, reply_markup=keyboard)
     except Exception:
         try:
-            await callback.message.edit_text(text=text, reply_markup=keyboard)
+            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
         except Exception:
-            pass
+            await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 
@@ -244,22 +193,13 @@ async def back_to_product_list(callback: CallbackQuery, session: AsyncSession):
     keyboard = get_products_keyboard(products, cat_id)
     text = f"🛍 <b>Do'kon</b>\n\n🎮 <b>{cat.name if cat else 'Kategoriya'}</b>\n\nQuyidagi mahsulotlardan birini tanlang:"
 
-    from aiogram.types import InputMediaPhoto
-    media_file = cat.image_file_id if (cat and cat.image_file_id) else FSInputFile(SHOP_BANNER)
-
     try:
-        if media_file:
-            await callback.message.edit_media(
-                media=InputMediaPhoto(media=media_file, caption=text, parse_mode="HTML"),
-                reply_markup=keyboard
-            )
-        else:
-            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
+        await callback.message.edit_text(text=text, reply_markup=keyboard)
     except Exception:
         try:
-            await callback.message.edit_text(text=text, reply_markup=keyboard)
+            await callback.message.edit_caption(caption=text, reply_markup=keyboard)
         except Exception:
-            pass
+            await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 
@@ -306,9 +246,9 @@ async def start_purchase(callback: CallbackQuery, session: AsyncSession, db_user
 
     keyboard = get_purchase_confirm_keyboard(prod_id)
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=keyboard)
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=keyboard)
+    except Exception:
+        await callback.message.answer(text, reply_markup=keyboard)
     await callback.answer()
 
 
@@ -445,10 +385,10 @@ async def confirm_purchase(callback: CallbackQuery, session: AsyncSession, db_us
     done_builder.button(**btn_args("back", "Bosh menyu"), callback_data="shop_back_main")
 
     try:
-        await callback.message.edit_caption(caption=text_msg, reply_markup=done_builder.as_markup())
+        await callback.message.edit_text(text=text_msg, reply_markup=done_builder.as_markup())
     except Exception:
         try:
-            await callback.message.edit_text(text=text_msg, reply_markup=done_builder.as_markup())
+            await callback.message.answer(text_msg, reply_markup=done_builder.as_markup())
         except Exception:
             # Telegram yetkazish xatosi (foydalanuvchi bloklagan yoki chat topilmadi)
             await session.execute(text("UPDATE orders SET status = 'DELIVERY_FAILED' WHERE id = :oid"), {"oid": order.id})
@@ -563,7 +503,7 @@ async def back_to_main(callback: CallbackQuery):
         f"</blockquote>"
     )
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
-    except Exception:
         await callback.message.edit_text(text=text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
+    except Exception:
+        await callback.message.answer(text, reply_markup=get_main_menu_keyboard(lambda x: x, is_admin=is_admin))
     await callback.answer()
