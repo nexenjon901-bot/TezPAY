@@ -13,7 +13,7 @@ from sqlalchemy import select
 from bot.filters.admin import IsAdmin
 from bot.states.admin import BroadcastMessage
 from db.models.user import User
-from core.emoji import format_emojis, pe
+from core.emoji import format_emojis, pe, btn_args
 
 router = Router()
 router.message.filter(IsAdmin())
@@ -23,7 +23,7 @@ router.callback_query.filter(IsAdmin())
 @router.message(F.text == "📢 Xabar yuborish")
 async def start_broadcast(message: Message, state: FSMContext):
     builder = InlineKeyboardBuilder()
-    builder.button(text="❌ Bekor qilish", callback_data="broadcast_cancel")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="broadcast_cancel")
 
     guide = (
         f"📢 <b>Foydalanuvchilarga xabar (post) yuborish</b>\n\n"
@@ -53,8 +53,8 @@ async def preview_broadcast(message: Message, state: FSMContext):
     )
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="✅ Barchaga yuborish", callback_data="broadcast_confirm")
-    builder.button(text="❌ Bekor qilish", callback_data="broadcast_cancel")
+    builder.button(**btn_args("confirm", "Barchaga yuborish"), callback_data="broadcast_confirm")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="broadcast_cancel")
     builder.adjust(2)
 
     await message.answer("👆 <b>Postingiz ko'rinishi (Preview) tayyorlandi.</b>\nBarchaga tarqatishni tasdiqlaysizmi?", reply_markup=builder.as_markup(), parse_mode="HTML")

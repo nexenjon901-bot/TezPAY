@@ -8,6 +8,7 @@ from aiogram.fsm.state import State, StatesGroup
 
 from bot.filters.admin import IsSuperAdmin
 from db.models.setting import Setting, SettingKeys
+from core.emoji import btn_args, pe
 
 router = Router()
 router.message.filter(IsSuperAdmin())
@@ -46,10 +47,10 @@ async def show_settings(message: Message, session: AsyncSession):
     )
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="💳 Kartani o'zgartirish", callback_data="admin_set_card")
-    builder.button(text="🎁 Referal bonusni o'zgartirish", callback_data="admin_set_ref")
-    builder.button(text="💸 Keshbekni o'zgartirish", callback_data="admin_set_cb")
-    builder.button(text="💰 Min. yechishni o'zgartirish", callback_data="admin_set_min_wd")
+    builder.button(**btn_args("card", "Kartani o'zgartirish"), callback_data="admin_set_card")
+    builder.button(**btn_args("gift", "Referal bonusni o'zgartirish"), callback_data="admin_set_ref")
+    builder.button(**btn_args("money", "Keshbekni o'zgartirish"), callback_data="admin_set_cb")
+    builder.button(**btn_args("balance", "Min. yechishni o'zgartirish"), callback_data="admin_set_min_wd")
     builder.adjust(1)
 
     await message.answer(text, reply_markup=builder.as_markup())

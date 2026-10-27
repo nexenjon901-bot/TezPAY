@@ -9,6 +9,7 @@ from db.models.account import Account, AccountStatus
 from db.models.user import User
 from bot.filters.admin import IsAdmin
 from core.config import config
+from core.emoji import btn_args, pe
 
 router = Router()
 router.callback_query.filter(IsAdmin())
@@ -39,9 +40,8 @@ async def list_pending_orders(message: Message, session: AsyncSession):
 
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
-    builder.button(text="✅ Approve", callback_data=f"adm_approve_{order.id}")
-    builder.button(text="❌ Reject", callback_data=f"adm_reject_{order.id}")
-    # builder.button(text="➡️ Next", callback_data="admin_orders") # simplified pagination
+    builder.button(**btn_args("confirm", "Approve"), callback_data=f"adm_approve_{order.id}")
+    builder.button(**btn_args("cancel", "Reject"), callback_data=f"adm_reject_{order.id}")
     builder.adjust(2)
 
     if order.payment.receipt_file_id:

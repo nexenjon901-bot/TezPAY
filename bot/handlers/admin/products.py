@@ -8,6 +8,7 @@ from db.models.product import Product
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.fsm.state import State, StatesGroup
 from core.security import encrypt_text, decrypt_text
+from core.emoji import btn_args, pe
 
 class ManageStock(StatesGroup):
     waiting_for_data = State()
@@ -26,9 +27,9 @@ router.callback_query.filter(IsAdmin())
 
 def _build_products_keyboard(products: list[Product]) -> InlineKeyboardBuilder:
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Yangi mahsulot", callback_data="adm_prod_add")
+    builder.button(**btn_args("confirm", "Yangi mahsulot"), callback_data="adm_prod_add")
     for p in products:
-        builder.button(text=f"{p.name} ({p.quantity} ta)", callback_data=f"adm_prod_view_{p.id}")
+        builder.button(**btn_args("product", f"{p.name} ({p.quantity} ta)"), callback_data=f"adm_prod_view_{p.id}")
     builder.adjust(1)
     return builder
 
@@ -67,8 +68,8 @@ async def add_prod_start(callback: CallbackQuery, state: FSMContext, session: As
         
     builder = InlineKeyboardBuilder()
     for cat in categories:
-        builder.button(text=cat.name, callback_data=f"adm_prod_cat_{cat.id}")
-    builder.button(text="↩️ Bekor qilish", callback_data="adm_prod_back")
+        builder.button(**btn_args("category", cat.name), callback_data=f"adm_prod_cat_{cat.id}")
+    builder.button(**btn_args("back", "Bekor qilish"), callback_data="adm_prod_back")
     builder.adjust(1)
     
     await state.set_state(ProductStates.waiting_for_category)
@@ -176,11 +177,11 @@ async def admin_product_detail(callback: CallbackQuery, session: AsyncSession):
     sold_count = stock_counts.get("SOLD", 0)
     
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Omborga tovar qo'shish", callback_data=f"adm_addstock_{pid}")
-    builder.button(text="📋 Mavjud tovarlarni ko'rish", callback_data=f"adm_viewstock_{pid}")
-    builder.button(text="🗑 Omborni tozalash", callback_data=f"adm_clearstock_{pid}")
-    builder.button(text="❌ Mahsulotni o'chirish", callback_data=f"adm_prod_del_{pid}")
-    builder.button(text="↩️ Orqaga", callback_data="adm_prod_back")
+    builder.button(**btn_args("cart", "Omborga tovar qo'shish"), callback_data=f"adm_addstock_{pid}")
+    builder.button(**btn_args("history", "Mavjud tovarlarni ko'rish"), callback_data=f"adm_viewstock_{pid}")
+    builder.button(**btn_args("delete", "Omborni tozalash"), callback_data=f"adm_clearstock_{pid}")
+    builder.button(**btn_args("cancel", "Mahsulotni o'chirish"), callback_data=f"adm_prod_del_{pid}")
+    builder.button(**btn_args("back", "Orqaga"), callback_data="adm_prod_back")
     builder.adjust(1)
     
     price_str = f"{float(p.price_uzs):,.0f} so'm"
@@ -223,7 +224,7 @@ async def view_available_stock(callback: CallbackQuery, session: AsyncSession):
         lines.append(f"{idx}. <code>{val}</code>")
         
     builder = InlineKeyboardBuilder()
-    builder.button(text="↩️ Mahsulotga qaytish", callback_data=f"adm_prod_view_{pid}")
+    builder.button(**btn_args("back", "Mahsulotga qaytish"), callback_data=f"adm_prod_view_{pid}")
     
     await callback.message.answer("\n".join(lines), reply_markup=builder.as_markup(), parse_mode="HTML")
     await callback.answer()

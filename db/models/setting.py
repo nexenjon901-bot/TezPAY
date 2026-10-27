@@ -41,6 +41,7 @@ class SettingKeys:
     EMOJI_ORDERS           = "emoji_orders"
     EMOJI_BROADCAST        = "emoji_broadcast"
     EMOJI_SETTINGS         = "emoji_settings"
+    EMOJI_PROMO_ADMIN      = "emoji_promo_admin"
     EMOJI_PREMIUM          = "emoji_premium"
     EMOJI_BACK_HOME        = "emoji_back_home"
 
@@ -58,6 +59,9 @@ class SettingKeys:
     EMOJI_CATEGORY = "emoji_category"
     EMOJI_PRODUCT  = "emoji_product"
     EMOJI_PHONE    = "emoji_phone"
+    EMOJI_SEARCH   = "emoji_search"
+    EMOJI_DELETE   = "emoji_delete"
+    EMOJI_TOGGLE   = "emoji_toggle"
 
     # ── 4. Post & Xabarlar uchun ──
     EMOJI_SUCCESS  = "emoji_success"
@@ -70,3 +74,7 @@ class SettingKeys:
     EMOJI_WELCOME  = "emoji_welcome"
     EMOJI_CARD_POST= "emoji_card_post"
     EMOJI_WARNING  = "emoji_warning"
+    EMOJI_GIFT_POST= "emoji_gift_post"
+    EMOJI_LINK     = "emoji_link"
+    EMOJI_TIME     = "emoji_time"
+    EMOJI_BELL     = "emoji_bell"

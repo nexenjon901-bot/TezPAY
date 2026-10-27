@@ -183,7 +183,7 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
                         dec = str(data_enc)
                     stock_map[oid] = dec
 
-        lines = ["🔘 <b>Oxirgi xaridlaringiz tarixi:</b>\n"]
+        lines = [f"{pe('history')} <b>Oxirgi xaridlaringiz tarixi:</b>\n"]
 
         for idx, o in enumerate(orders, 1):
             date_str = o.created_at.strftime("%d.%m.%Y %H:%M") if o.created_at else "—"
@@ -198,15 +198,15 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
                 parts = raw_data.split(":", 1)
                 login_part = parts[0].strip()
                 pass_part = parts[1].strip()
-                data_display = f"• 👤 Login / Pochta: <code>{login_part}</code>\n• 🔐 Parol: <code>{pass_part}</code>"
+                data_display = f"• {pe('profile')} Login / Pochta: <code>{login_part}</code>\n• {pe('lock')} Parol: <code>{pass_part}</code>"
             elif raw_data:
-                data_display = f"• 🔑 Ma'lumot: <code>{raw_data}</code>"
+                data_display = f"• {pe('star')} Ma'lumot: <code>{raw_data}</code>"
             else:
-                data_display = "• ℹ️ Ma'lumot: <i>Yetkazib berilgan</i>"
+                data_display = f"• {pe('success')} Holat: <i>Yetkazib berilgan</i>"
 
             order_block = (
                 f"<b>{idx}. #{o.order_number} | {p_name}</b>\n"
-                f"💰 {price_str} | ⏰ {date_str}\n"
+                f"{pe('money')} {price_str} | {pe('time')} {date_str}\n"
                 f"<blockquote>"
                 f"{data_display}"
                 f"</blockquote>"
@@ -270,13 +270,13 @@ async def view_order_details(callback: CallbackQuery, session: AsyncSession, db_
     st_title = status_icons.get(order.status.value if order.status else "", "Holat: " + str(order.status))
 
     text_msg = (
-        f"🧾 <b>Buyurtma #{order.order_number}</b>\n\n"
+        f"{pe('history')} <b>Buyurtma #{order.order_number}</b>\n\n"
         f"<blockquote>"
-        f"🎮 Mahsulot: <b>{prod_name}</b>\n"
-        f"💰 Narxi: <b>{format_money(order.price)}</b>\n"
+        f"{pe('product')} Mahsulot: <b>{prod_name}</b>\n"
+        f"{pe('money')} Narxi: <b>{format_money(order.price)}</b>\n"
         f"📊 Holati: <b>{st_title}</b>\n"
-        f"📅 Sana: <b>{order_date}</b>\n\n"
-        f"🔑 <b>Hisob ma'lumotlari:</b>\n"
+        f"{pe('time')} Sana: <b>{order_date}</b>\n\n"
+        f"{pe('lock')} <b>Hisob ma'lumotlari:</b>\n"
         f"<code>{item_data}</code>"
         f"</blockquote>"
     )

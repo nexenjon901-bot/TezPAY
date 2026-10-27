@@ -10,7 +10,7 @@ from bot.filters.admin import IsAdmin
 from db.models.user import User
 from db.models.order import Order, OrderStatus, BalanceRequest, BalanceRequestStatus
 from db.models.product import Category, Product
-from core.emoji import reply_btn
+from core.emoji import reply_btn, btn_args, pe
 
 router = Router()
 router.message.filter(IsAdmin())
@@ -171,7 +171,7 @@ async def show_statistics(message: Message, session: AsyncSession):
 
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
-    builder.button(text="📜 Tranzaksiyalar tarixi", callback_data="adm_tx_history")
+    builder.button(**btn_args("history", "Tranzaksiyalar tarixi"), callback_data="adm_tx_history")
     builder.adjust(1)
 
     await message.answer(text, reply_markup=builder.as_markup())
@@ -225,7 +225,7 @@ async def show_users(message: Message, session: AsyncSession):
 
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
-    builder.button(text="🔍 Foydalanuvchi qidirish", callback_data="adm_user_search")
+    builder.button(**btn_args("search", "Foydalanuvchi qidirish"), callback_data="adm_user_search")
     builder.adjust(1)
 
     await message.answer("\n".join(lines), reply_markup=builder.as_markup())
@@ -309,11 +309,11 @@ async def _show_user_detail(target, user: User, session: AsyncSession):
 
     from aiogram.utils.keyboard import InlineKeyboardBuilder
     builder = InlineKeyboardBuilder()
-    builder.button(text="💰 Balans qo'shish", callback_data=f"adm_ubal_add_{user.id}")
-    builder.button(text="💸 Balans yechish", callback_data=f"adm_ubal_sub_{user.id}")
-    builder.button(text="🚫 Bloklash" if not user.is_blocked else "✅ Blokdan chiqarish",
+    builder.button(**btn_args("balance", "Balans qo'shish"), callback_data=f"adm_ubal_add_{user.id}")
+    builder.button(**btn_args("money", "Balans yechish"), callback_data=f"adm_ubal_sub_{user.id}")
+    builder.button(**btn_args("cancel" if not user.is_blocked else "confirm", "Bloklash" if not user.is_blocked else "Blokdan chiqarish"),
                    callback_data=f"adm_utoggle_{user.id}")
-    builder.button(text="🔍 Boshqa qidirish", callback_data="adm_user_search")
+    builder.button(**btn_args("search", "Boshqa qidirish"), callback_data="adm_user_search")
     builder.adjust(2, 1, 1)
 
     if isinstance(target, CallbackQuery):

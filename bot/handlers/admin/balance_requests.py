@@ -10,6 +10,7 @@ from core.logger import logger
 from db.models.order import BalanceRequest, BalanceRequestStatus
 from db.models.user import User
 from core.utils import format_money
+from core.emoji import btn_args, pe
 from services.wallet import credit, TransactionType
 from sqlalchemy import text
 
@@ -42,8 +43,8 @@ async def _send_balance_request(target, req: BalanceRequest):
     uname = f"@{user.username}" if user.username else f"ID: {user.telegram_id}"
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="✅ Tasdiqlash", callback_data=f"bal_approve_{req.id}")
-    builder.button(text="❌ Rad etish",  callback_data=f"bal_reject_{req.id}")
+    builder.button(**btn_args("confirm", "Tasdiqlash"), callback_data=f"bal_approve_{req.id}")
+    builder.button(**btn_args("cancel", "Rad etish"),  callback_data=f"bal_reject_{req.id}")
     builder.adjust(2)
 
     text = (

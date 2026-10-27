@@ -51,6 +51,9 @@ EMOJI_CATEGORIES = {
             (SettingKeys.EMOJI_LANG,     "Bot tili / Til",      "🌐"),
             (SettingKeys.EMOJI_SHARE,    "Do'stlarga ulashish", "📲"),
             (SettingKeys.EMOJI_PHONE,    "Telefon raqam yuborish","📱"),
+            (SettingKeys.EMOJI_SEARCH,   "Qidirish tugmasi",    "🔍"),
+            (SettingKeys.EMOJI_DELETE,   "O'chirish tugmasi",   "🗑️"),
+            (SettingKeys.EMOJI_TOGGLE,   "Holatni o'zgartirish","🔄"),
         ]
     },
     "admin": {
@@ -64,6 +67,7 @@ EMOJI_CATEGORIES = {
             (SettingKeys.EMOJI_ORDERS,           "Buyurtmalar",         "🛒"),
             (SettingKeys.EMOJI_BROADCAST,        "Xabar yuborish",      "📢"),
             (SettingKeys.EMOJI_SETTINGS,         "Sozlamalar",          "⚙️"),
+            (SettingKeys.EMOJI_PROMO_ADMIN,      "Promo-kodlar",        "🎟"),
             (SettingKeys.EMOJI_PREMIUM,          "Premium Emoji",       "✨"),
             (SettingKeys.EMOJI_BACK_HOME,        "Bosh menyuga",        "⬅️"),
         ]
@@ -81,6 +85,10 @@ EMOJI_CATEGORIES = {
             (SettingKeys.EMOJI_MONEY,    "Pul (💸)",                    "💸"),
             (SettingKeys.EMOJI_LOCK,     "Qulf (🔒)",                   "🔒"),
             (SettingKeys.EMOJI_CARD_POST,"Karta to'lov posti (💳)",     "💳"),
+            (SettingKeys.EMOJI_GIFT_POST,"Sovg'a / Chegirma posti (🎁)","🎁"),
+            (SettingKeys.EMOJI_LINK,     "Havola / Link (🔗)",          "🔗"),
+            (SettingKeys.EMOJI_TIME,     "Vaqt / Sana (⏰)",            "⏰"),
+            (SettingKeys.EMOJI_BELL,     "Bildirishnoma (🔔)",          "🔔"),
         ]
     }
 }

@@ -41,7 +41,7 @@ async def _show_promo_list(target, session: AsyncSession, edit: bool = False):
     now = datetime.now(timezone.utc)
     lines = ["🎟 <b>Promo-kodlar boshqaruvi</b>\n"]
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Yangi promo-kod yaratish", callback_data="adm_promo_create")
+    builder.button(**btn_args("promo", "Yangi promo-kod yaratish"), callback_data="adm_promo_create")
 
     if promos:
         for p in promos:
@@ -120,11 +120,11 @@ async def view_promo(callback: CallbackQuery, session: AsyncSession):
 
     builder = InlineKeyboardBuilder()
     if promo.is_active and not expired:
-        builder.button(text="🔴 Faolsizlashtirish", callback_data=f"adm_promo_toggle_{promo_id}")
+        builder.button(**btn_args("cancel", "Faolsizlashtirish"), callback_data=f"adm_promo_toggle_{promo_id}")
     else:
-        builder.button(text="🟢 Faollashtirish", callback_data=f"adm_promo_toggle_{promo_id}")
-    builder.button(text="🗑 O'chirish", callback_data=f"adm_promo_delete_{promo_id}")
-    builder.button(text="↩️ Ro'yxatga qaytish", callback_data="adm_promo_list")
+        builder.button(**btn_args("confirm", "Faollashtirish"), callback_data=f"adm_promo_toggle_{promo_id}")
+    builder.button(**btn_args("delete", "O'chirish"), callback_data=f"adm_promo_delete_{promo_id}")
+    builder.button(**btn_args("back", "Ro'yxatga qaytish"), callback_data="adm_promo_list")
     builder.adjust(2, 1)
 
     try:
@@ -170,7 +170,7 @@ async def delete_promo(callback: CallbackQuery, session: AsyncSession):
 async def start_create_promo(callback: CallbackQuery, state: FSMContext):
     await state.set_state(PromoAdminStates.waiting_for_code)
     builder = InlineKeyboardBuilder()
-    builder.button(text="❌ Bekor qilish", callback_data="adm_promo_list")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="adm_promo_list")
 
     await callback.message.edit_text(
         "🎟 <b>Yangi promo-kod yaratish</b>\n\n"
@@ -196,7 +196,7 @@ async def promo_step_code(message: Message, state: FSMContext):
     await state.set_state(PromoAdminStates.waiting_for_amount)
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="❌ Bekor qilish", callback_data="adm_promo_list")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="adm_promo_list")
     await message.answer(
         f"✅ Kod: <code>{code}</code>\n\n"
         "<b>2/4 — Mukofot summasi (so'mda):</b>\n"
@@ -216,8 +216,8 @@ async def promo_step_amount(message: Message, state: FSMContext):
     await state.set_state(PromoAdminStates.waiting_for_max_uses)
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="♾ Cheksiz (limit yo'q)", callback_data="adm_promo_unlimited")
-    builder.button(text="❌ Bekor qilish", callback_data="adm_promo_list")
+    builder.button(**btn_args("confirm", "Cheksiz (limit yo'q)"), callback_data="adm_promo_unlimited")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="adm_promo_list")
     builder.adjust(1)
 
     await message.answer(
@@ -251,11 +251,11 @@ async def promo_step_max_uses(message: Message, state: FSMContext):
 
 async def _ask_expires(target):
     builder = InlineKeyboardBuilder()
-    builder.button(text="♾ Muddatsiz", callback_data="adm_promo_no_expire")
-    builder.button(text="📅 1 kun", callback_data="adm_promo_expire_1")
-    builder.button(text="📅 7 kun", callback_data="adm_promo_expire_7")
-    builder.button(text="📅 30 kun", callback_data="adm_promo_expire_30")
-    builder.button(text="❌ Bekor qilish", callback_data="adm_promo_list")
+    builder.button(**btn_args("confirm", "Muddatsiz"), callback_data="adm_promo_no_expire")
+    builder.button(**btn_args("time", "1 kun"), callback_data="adm_promo_expire_1")
+    builder.button(**btn_args("time", "7 kun"), callback_data="adm_promo_expire_7")
+    builder.button(**btn_args("time", "30 kun"), callback_data="adm_promo_expire_30")
+    builder.button(**btn_args("cancel", "Bekor qilish"), callback_data="adm_promo_list")
     builder.adjust(1, 3, 1)
 
     text = (
@@ -309,8 +309,8 @@ async def _finish_promo_creation(target, state: FSMContext, session: AsyncSessio
     )
 
     builder = InlineKeyboardBuilder()
-    builder.button(text="📋 Barcha kodlar", callback_data="adm_promo_list")
-    builder.button(text="➕ Yana yaratish", callback_data="adm_promo_create")
+    builder.button(**btn_args("history", "Barcha kodlar"), callback_data="adm_promo_list")
+    builder.button(**btn_args("promo", "Yana yaratish"), callback_data="adm_promo_create")
     builder.adjust(1)
 
     if isinstance(target, Message):

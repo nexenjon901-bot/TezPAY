@@ -8,6 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.filters.admin import IsAdmin
 from db.models.product import Category
+from core.emoji import btn_args, pe
 
 router = Router()
 router.message.filter(IsAdmin())
@@ -23,9 +24,9 @@ async def list_categories(message: Message, session: AsyncSession):
     categories = res.scalars().all()
     
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Yangi kategoriya", callback_data="adm_cat_add")
+    builder.button(**btn_args("confirm", "Yangi kategoriya"), callback_data="adm_cat_add")
     for cat in categories:
-        builder.button(text=f"{cat.name}", callback_data=f"adm_cat_view_{cat.id}")
+        builder.button(**btn_args("category", cat.name), callback_data=f"adm_cat_view_{cat.id}")
     builder.adjust(1)
     
     await message.answer("📂 <b>Kategoriyalar</b>\n\nBoshqarish uchun tanlang:", reply_markup=builder.as_markup())
@@ -85,8 +86,8 @@ async def view_category(callback: CallbackQuery, session: AsyncSession):
     txt = f"📂 <b>{cat.name}</b>\nFaol: {'Ha' if cat.is_active else 'Yoq'}\n"
     
     builder = InlineKeyboardBuilder()
-    builder.button(text="🗑 O'chirish", callback_data=f"adm_cat_del_{cat_id}")
-    builder.button(text="🔙 Orqaga", callback_data="adm_cat_back")
+    builder.button(**btn_args("cancel", "O'chirish"), callback_data=f"adm_cat_del_{cat_id}")
+    builder.button(**btn_args("back", "Orqaga"), callback_data="adm_cat_back")
     
     try:
         await callback.message.edit_text(txt, reply_markup=builder.as_markup())
@@ -98,9 +99,9 @@ async def back_to_cats(callback: CallbackQuery, session: AsyncSession):
     res = await session.execute(select(Category).order_by(Category.order_index))
     categories = res.scalars().all()
     builder = InlineKeyboardBuilder()
-    builder.button(text="➕ Yangi kategoriya", callback_data="adm_cat_add")
+    builder.button(**btn_args("confirm", "Yangi kategoriya"), callback_data="adm_cat_add")
     for cat in categories:
-        builder.button(text=f"{cat.name}", callback_data=f"adm_cat_view_{cat.id}")
+        builder.button(**btn_args("category", cat.name), callback_data=f"adm_cat_view_{cat.id}")
     builder.adjust(1)
     try:
         await callback.message.edit_text("📂 <b>Kategoriyalar</b>\n\nBoshqarish uchun tanlang:", reply_markup=builder.as_markup())

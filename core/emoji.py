@@ -68,6 +68,13 @@ _FALLBACK: dict[str, str] = {
     "emoji_welcome":          "👋",
     "emoji_card_post":        "💳",
     "emoji_warning":          "⚠️",
+    "emoji_gift_post":        "🎁",
+    "emoji_link":             "🔗",
+    "emoji_time":             "⏰",
+    "emoji_bell":             "🔔",
+    "emoji_search":           "🔍",
+    "emoji_delete":           "🗑️",
+    "emoji_toggle":           "🔄",
 }
 
 # Xotiradagi kesh: { slug: emoji_id }
