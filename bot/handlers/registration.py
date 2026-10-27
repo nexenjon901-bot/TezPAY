@@ -26,7 +26,7 @@ def get_main_menu_keyboard(_: Callable[[str], str] = None, is_admin: bool = Fals
     builder.button(**btn_args("balance", "Balans to'ldirish"), callback_data="menu_balance")
     builder.button(**btn_args("useful", "Foydali"), callback_data="menu_useful")
     builder.button(**btn_args("referral", "Referal tizimi"), callback_data="menu_referral")
-    builder.button(**btn_args("support", "Qo'llab-quvvatlash"), url=config.SUPPORT_URL)
+    builder.button(**btn_args("support", "Qo'llab-quvvatlash"), url="https://t.me/ENTELLI_SUPPORT")
     if is_admin:
         builder.button(**btn_args("admin", "Admin panel"), callback_data="menu_admin")
     builder.adjust(1, 2, 2, 1)
@@ -193,8 +193,7 @@ async def menu_referral(callback: CallbackQuery, session: AsyncSession, db_user:
 
 @router.callback_query(F.data == "menu_support")
 async def menu_support(callback: CallbackQuery):
-    from core.config import config
-    await callback.answer(url=config.SUPPORT_URL)
+    await callback.answer(url="https://t.me/ENTELLI_SUPPORT")
 
 
 @router.callback_query(F.data == "menu_admin")
