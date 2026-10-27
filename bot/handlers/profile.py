@@ -132,6 +132,12 @@ async def show_profile(target, session: AsyncSession, db_user: User):
 
 @router.callback_query(F.data == "profile_orders")
 async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db_user: User):
+    from sqlalchemy import text
+    from core.security import decrypt_text
+    from core.utils import format_money
+    from db.models.product import Product
+
+    # Oxirgi 10 ta muvaffaqiyatli yoki barcha buyurtmalarni olish
     result = await session.execute(
         select(Order)
         .where(Order.user_id == db_user.id)
@@ -143,44 +149,80 @@ async def show_orders_history(callback: CallbackQuery, session: AsyncSession, db
     builder = InlineKeyboardBuilder()
 
     if not orders:
-        text = (
-            "📋 <b>Buyurtmalar tarixi</b>\n\n"
+        text_content = (
+            "🔘 <b>Oxirgi xaridlaringiz tarixi:</b>\n\n"
             "<blockquote>"
             "Siz hali hech narsa xarid qilmadingiz.\n"
             "Do'kon bo'limidan kerakli mahsulotni tanlang."
             "</blockquote>"
         )
     else:
-        lines = [
-            "📋 <b>Buyurtmalar tarixi</b>\n\n"
-            "<blockquote>"
-            "Batafsil ma'lumotni ko'rish uchun kerakli buyurtma tugmasini bosing:"
-            "</blockquote>\n"
-        ]
-        for o in orders:
-            date = o.created_at.strftime("%d.%m.%Y") if o.created_at else "—"
-            status_icons = {
-                "COMPLETED": "✅", "CANCELLED": "❌", "REJECTED": "❌",
-                "PAYMENT_REVIEW": "⏳", "APPROVED": "✔️", "PENDING_PAYMENT": "⏳",
-                "DELIVERY_FAILED": "⚠️"
-            }
-            icon = status_icons.get(o.status.value if o.status else "", "❓")
-            lines.append(f"{icon} <code>{o.order_number}</code> | {float(o.price):,.0f} so'm | {date}")
-            
-            # Add button for this order
-            builder.button(text=f"{icon} #{o.order_number}", callback_data=f"order_view_{o.id}")
-            
-        text = "\n".join(lines)
+        # Barcha order IDlarini to'plab, unga tegishli stock_items ma'lumotlarini bir martada olamiz
+        order_ids = [o.id for o in orders]
+        product_ids = [o.product_id for o in orders if o.product_id]
+        
+        # Mahsulot nomlarini olish
+        prod_map = {}
+        if product_ids:
+            p_res = await session.execute(select(Product).where(Product.id.in_(product_ids)))
+            for p in p_res.scalars().all():
+                prod_map[p.id] = p.name
 
-    # Adjust order buttons 1 per row for clear mobile tapping
+        # StockItems ma'lumotlarini olish
+        stock_map = {}
+        if order_ids:
+            s_res = await session.execute(
+                text("SELECT order_id, data_encrypted FROM stock_items WHERE order_id = ANY(:oids)"),
+                {"oids": order_ids}
+            )
+            for oid, data_enc in s_res.fetchall():
+                if data_enc:
+                    try:
+                        dec = decrypt_text(data_enc)
+                    except Exception:
+                        dec = str(data_enc)
+                    stock_map[oid] = dec
+
+        lines = ["🔘 <b>Oxirgi xaridlaringiz tarixi:</b>\n"]
+
+        for idx, o in enumerate(orders, 1):
+            date_str = o.created_at.strftime("%d.%m.%Y %H:%M") if o.created_at else "—"
+            p_name = prod_map.get(o.product_id, "Mahsulot")
+            price_str = format_money(o.price)
+
+            # Mahsulot ma'lumotini shakllantirish
+            raw_data = stock_map.get(o.id, "")
+            
+            # Agar ma'lumot login:parol formatida bo'lsa
+            if ":" in raw_data and not raw_data.startswith("http"):
+                parts = raw_data.split(":", 1)
+                login_part = parts[0].strip()
+                pass_part = parts[1].strip()
+                data_display = f"• 👤 Login / Pochta: <code>{login_part}</code>\n• 🔐 Parol: <code>{pass_part}</code>"
+            elif raw_data:
+                data_display = f"• 🔑 Ma'lumot: <code>{raw_data}</code>"
+            else:
+                data_display = "• ℹ️ Ma'lumot: <i>Yetkazib berilgan</i>"
+
+            order_block = (
+                f"<b>{idx}. #{o.order_number} | {p_name}</b>\n"
+                f"💰 {price_str} | ⏰ {date_str}\n"
+                f"<blockquote>"
+                f"{data_display}"
+                f"</blockquote>"
+            )
+            lines.append(order_block)
+
+        text_content = "\n\n".join(lines)
+
+    # Faqat Orqaga tugmasi (skrinshotdagi kabi)
+    builder.button(**btn_args("back", "Orqaga"), callback_data="profile_back_detail")
     builder.adjust(1)
-    # Add back button on its own row
-    builder.row(InlineKeyboardBuilder().button(**btn_args("back", "Orqaga"), callback_data="profile_back_detail").as_markup().inline_keyboard[0])
 
     try:
-        await callback.message.edit_caption(caption=text, reply_markup=builder.as_markup())
+        await callback.message.edit_caption(caption=text_content, reply_markup=builder.as_markup())
     except Exception:
-        await callback.message.edit_text(text=text, reply_markup=builder.as_markup())
+        await callback.message.edit_text(text=text_content, reply_markup=builder.as_markup())
     await callback.answer()
 
 @router.callback_query(F.data.startswith("order_view_"))
