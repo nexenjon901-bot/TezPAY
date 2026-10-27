@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     PAYMENT_CARD: str = "8600 0000 0000 0000"       # Karta raqami
     PAYMENT_CARD_OWNER: str = "Karta egasi"          # Karta egasining ismi
     PAYMENT_PHONE: str = ""                          # To'lov rekvizitlari telefoni
-    SUPPORT_URL: str = "https://t.me/entelli_sale" # Qo'llab-quvvatlash havolasi
+    SUPPORT_URL: str = "https://t.me/ENTELLI_SUPPORT" # Qo'llab-quvvatlash havolasi
 
     # Referal tizimi
     REFERRAL_BONUS_UZS: int = 2000                   # Referal bonusi (UZS)

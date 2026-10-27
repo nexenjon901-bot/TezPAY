@@ -6,8 +6,8 @@ from core.emoji import pe, btn_args
 router = Router()
 
 USEFUL_LINKS = [
-    ("📺 YouTube kanalimiz", "https://youtube.com"),
-    ("💬 Telegram kanalimiz", "https://t.me/entelli_sale"),
+    ("📺 YouTube kanalimiz", "https://youtube.com/@entelli4ever?si=iO8-vSUT117rRk8c"),
+    ("💬 Telegram kanalimiz", "https://t.me/entellistore"),
 ]
 
 
